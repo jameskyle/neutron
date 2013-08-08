@@ -18,88 +18,95 @@
 from abc import abstractmethod
 
 from neutron.api import extensions
+from neutron.api.v2 import base
+from neutron.api.v2 import attributes as attr
 from neutron.openstack.common import jsonutils
 from neutron import wsgi
 
+RESOURCE_NAME = 'group'
+RESOURCE_PLURALS = {
+    'groups': 'group',
+}
 
-class TopologyController(wsgi.Controller):
-
-    def index(self, request):
-        return "All your controller are belong to us"
+RESOURCE_ATTRIBUTE_MAP = {
+    RESOURCE_NAME + 's': {
+        'id': {
+            'allow_post': False,
+            'allow_put': False,
+            'validate': {'type:uuid': None},
+            'is_visible': True,
+            'primary_key': True,
+        },
+        'name': {
+            'allow_post': True,
+            'allow_put': True,
+            'validate': {'type:string': None},
+            'default': '',
+            'is_visible': True,
+        },
+        'description': {
+            'allow_post': True,
+            'allow_put': True,
+            'validate': {'type:string': None},
+            'default': '', 'is_visible': True
+        },
+        'tenant_id': {
+            'allow_post': True,
+            'allow_put': False,
+            'validate': {'type:string': None},
+            'required_by_policy': True,
+            'is_visible': True,
+        },
+        'instance_id': {
+            'allow_post': True,
+            'allow_put': False,
+            'validate': {'type:string': None},
+            'is_visible': True,
+        }
+}
 
 
 class Topology(object):
-
     def __init__(self):
         pass
 
     def get_plugin_interface(self):
         return TopologyPluginInterface
 
+    @classmethod
     def get_name(self):
         return "Neutron Topology API"
 
+    @classmethod
     def get_alias(self):
         return "TOPOLOGY"
 
+    @classmethod
     def get_description(self):
         return "Create networks using logical topology semantics"
 
+    @classmethod
     def get_namespace(self):
         return "http://www.foundry.att.com/api/ext/pie/v1.0"
 
+    @classmethod
     def get_updated(self):
         return "2013-08-06T16:06:00-08:00"
 
+    @classmethod
     def get_resources(self):
-        resources = []
-        resource = extensions.ResourceExtension('topology',
-                                                TopologyController())
-        resources.append(resource)
-        return resources
+        """Returns Extension Resources for the Topology API"""
 
-    def get_actions(self):
-        return [extensions.ActionExtension('topology_resources',
-                                           'TOPOLOGY:add_group',
-                                           self._add_group_handler),
-                extensions.ActionExtension('topology_resources',
-                                           'TOPOLOGY:delete_group',
-                                           self._delete_group_handler)]
+        attr.PLURALS.update(RESOURCE_PLURALS)
+        plugin = manager.NeutronManager.get_plugin()
+        params = RESOURCE_ATTRIBUTE_MAP.get(RESOURCE_NAME + 's')
+        controller = base.create_resource(
+                                           RESOURCE_NAME + 's',
+                                           RESOURCE_NAME,
+                                           plugin,
+                                           params,
+                                         )
+        ext = extensions.ResourceExtension(RESOURCE_NAME + 's', controller)
+        return [ext]
 
-    def get_request_extensions(self):
-        request_exts = []
 
-        def _group_handler(req, res):
-            #NOTE: This only handles JSON responses.
-            # You can use content type header to test for XML.
-            data = jsonutils.loads(res.body)
-            data['TOPOLOGY:groups'] = req.GET.get('groups')
-            res.body = jsonutils.dumps(data)
-            return res
-
-        req_ext1 = extensions.RequestExtension('GET',
-                                               '/topology_resources/:(id)',
-                                               _group_handler)
-        request_exts.append(req_ext1)
-
-        def _policy_handler(req, res):
-            #NOTE: This only handles JSON responses.
-            # You can use content type header to test for XML.
-            data = jsonutils.loads(res.body)
-            data['TOPOLOGY:policies'] = req.GET.get('policies')
-            res.body = jsonutils.dumps(data)
-            return res
-
-        req_ext2 = extensions.RequestExtension('GET', 
-                                               '/topology_resources/:(id)',
-                                               _policy_handler)
-        request_exts.append(req_ext2)
-        return request_exts
-
-    def _add_group_handler(self, input_dict, req, id):
-        return "Group {0} Added.".format(
-            input_dict['TOPOLOGY:add_group']['name'])
-
-    def _delete_group_handler(self, input_dict, req, id):
-        return "Group {0} Deleted.".format(
-            input_dict['TOPOLOGY:delete_group']['name'])
