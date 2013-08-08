@@ -21,17 +21,11 @@ from neutron.api import extensions
 from neutron.openstack.common import jsonutils
 from neutron import wsgi
 
+
 class TopologyController(wsgi.Controller):
 
     def index(self, request):
         return "All your controller are belong to us"
-
-
-class TopologyPluginInterface(extensions.PluginInterface):
-
-    @abstractmethod
-    def create_group(self):
-        pass
 
 
 class Topology(object):
