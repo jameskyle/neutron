@@ -226,3 +226,9 @@ class TopologyDbMixin(topology.TopologyPluginBase,
     def _make_affinity_policy_dict(self, affinity_policy, fields=None):
         res = self._sanitize_affinity_policy(affinity_policy)
         return self._fields(res, fields)
+
+
+    def create_port(self, context, port):
+        port_dict = super(TopologyDbMixin, self).create_port(self, context, port)
+
+        return port_dict
