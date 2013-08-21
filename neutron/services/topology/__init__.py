@@ -16,6 +16,7 @@
 #    under the License.
 
 from neutron.db.topology import TopologyDbMixin
+from neutron.common import rpc as p_rpc
 
 class TopologyCallbacks(TopologyDbMixin):
 
