@@ -54,7 +54,7 @@ class AffinityPolicy(model_base.BASEV2, models_v2.HasId, models_v2.HasTenant, mo
 
 
 class AffinityMapper(model_base.BASEV2):
-
+    """Represents Network Device Association """
     affinity_id = sa.Column(sa.String(36),
                             sa.ForeignKey('affinitys.id', ondelete="CASCADE"),
                             nullable=False, primary_key=True)
@@ -64,10 +64,10 @@ class AffinityMapper(model_base.BASEV2):
 
 class TopologyDbMixin(topology.TopologyPluginBase,
                            base_db.CommonDbMixin):
-    """Wraps loadbalancer with SQLAlchemy models.
+    """SQLAlchemy models.
 
-    A class that wraps the implementation of the Neutron loadbalancer
-    plugin database access interface using SQLAlchemy models.
+    A class that wraps the implementation of the Neutron Topology
+    extension database access interface using SQLAlchemy models.
     """
 
     @property
